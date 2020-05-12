@@ -4,9 +4,27 @@
 ;NOTE: that despite the fact the include file is built before it is included changes will take effect on the next load.
 ;------------------------------------------------------------------------------
 #SingleInstance Force
+
 TraySetIcon("HotClipper.ico")
+
+global LibAlreadyOpen
+global clipLibGui
+global SearchTermEdit
+global LV
+global LVArray
+global sBar
+global TotalItems
+global myGui
+
+global tray := A_TrayMenu
+Tray.Delete()
+Tray.Add()
+Tray.Add("About", "AboutWindow")
+Tray.Add("Options", "OptionsWindow")
+
 FileDelete A_WorkingDir . "\includeMaster.ahk"
 rebuildMasterInclude()
+
 
 ;Static users settings, need to be moved to an .ini
 userIniFile := "settings.ini"
@@ -30,6 +48,7 @@ rebuildMasterInclude(){
 	FileDelete A_WorkingDir . "\includeMaster.ahk"
 	FileAppend MasterDirChange, A_WorkingDir . "\includeMaster.ahk"
 	FileAppend FileList, A_WorkingDir . "\includeMaster.ahk"
+	return
 }
 ;------------------------------------------------------------------------------
 ; Win+N Support GUI Playground
@@ -37,17 +56,17 @@ rebuildMasterInclude(){
 
 #h::
 {
-	global LibAlreadyOpen
-	global clipLibGui
-	global SearchTermEdit
-	global LV
-	global LVArray
+	BuildManager()
+	return
+}
+
+BuildManager() {
 	LVArray := []
 	;Prevent more then one Clip Library GUI
 	if (LibAlreadyOpen==1) {
 	clipLibGui.Destroy()
 	}
-	clipLibGui := GuiCreate()
+	clipLibGui := GuiCreate(,"HotClipper - Manager")
 	clipLibGui.BackColor := "FF7700"
 	LibAlreadyOpen :=1
 	SearchTermEdit := clipLibGui.add("Edit", "BackgroundBlack cWhite w700")
@@ -61,7 +80,6 @@ rebuildMasterInclude(){
 	LV.OnEvent("ItemSelect", "LV_ItemSelect")
 
 	DeafultButton.OnEvent("Click", "DeafultButton_Click")
-;	NewPlainTextClipButton.OnEvent("Click", "NewPlainTextClipButton_Click")
 	DeleteButton.OnEvent("Click", "DeleteButton_Click")
 
 
@@ -102,20 +120,13 @@ rebuildMasterInclude(){
 	sBar := clipLibGui.Add("StatusBar", , "Total Clips: " . TotalItems) 
 	clipLibGui.Show
 	clipLibGui.OnEvent("Escape", "UserInputEscapeCibLibGui")
-	
-	global SearchControlID := ControlGetFocus("HotClipperV2.ahk")
 	return
 }
 
 ; search system 
-SearchTermChange(JunkOne, JunkTwo) ;Junk required but not used.
-{
-global clipLibGui
-global LV
+SearchTermChange(*) {
 global NewSearchTerm := SearchTermEdit.value
-global LVArray
-global sBar
-global TotalItems
+
 LV.Delete ; clear the List View for the new results
 
 ;build the results and and them to the List View
@@ -144,9 +155,10 @@ For Each, RowName In LVArray
 Items := LV.GetCount() 
 sBar.SetText("    " Items " of " TotalItems)
 LV.Move(,true)
+return
 }
 
-DeafultButton_Click(GuiCtrlObj, Info){
+DeafultButton_Click(GuiCtrlObj, Info) {
 	global SelectedLVItem
     SelectedLVItem := StrReplace(SelectedLVItem,".ahk",".clip")
     FileToRead := A_WorkingDir . "\MyClips\" . SelectedLVItem
@@ -161,29 +173,21 @@ DeafultButton_Click(GuiCtrlObj, Info){
 return
 }
 
-;NewPlainTextClipButton_Click(GuiCtrlObj, Info){
-;
-;return
-;}
 
-
-DeleteButton_Click(GuiCtrlObj, Info){
+DeleteButton_Click(*){
 	global SelectedLVItem
 	SelectedLVItemToClip := StrReplace(SelectedLVItem,".ahk",".clip")
-
 	FileRecycle  A_WorkingDir . "\MyClips\" SelectedLVItem
 	FileRecycle  A_WorkingDir . "\MyClips\" SelectedLVItemToClip
-	send "{LWin down} {n} {LWin up}"
+	BuildManager()
 return
 }
 
-LV_ItemSelect(LV,RowNumber,JunkThree)
-{
+LV_ItemSelect(LV,RowNumber,JunkThree) {
 global SelectedLVItem := LV.GetText(RowNumber , 1)
 return
 }
-LV_DoubleClick(LV, RowNumber)
-{
+LV_DoubleClick(LV, RowNumber) {
     RetrievedText := LV.GetText(RowNumber , 1)
     RetrievedText := StrReplace(RetrievedText,".ahk",".clip")
     FileToRead := A_WorkingDir . "\MyClips\" . RetrievedText
@@ -195,20 +199,22 @@ LV_DoubleClick(LV, RowNumber)
     clipLibGui.Destroy()
 	
 SetTimer "Kill_ToolTip", 1000 ;after 1second
+return
 }
 
-UserInputEscapeCibLibGui(JunkOne){
+UserInputEscapeCibLibGui(*){
 	LibAlreadyOpen := 0
     clipLibGui.Destroy()
 	return
 }
-UserInputEscapemyGui(JunkOne){
+UserInputEscapemyGui(*){
     myGui.Destroy()
 	return
 }
 
 Kill_Tooltip(){
-ToolTip()
+	ToolTip()
+	return
 }
 
 ;------------------------------------------------------------------------------
@@ -219,7 +225,6 @@ ToolTip()
 	if userSetSendC == 1
 		Send "{Ctrl down}c{Ctrl up}"
 
-	global myGui
 	global ClipName
 	global ClipHotstring 
 	global ClipNameEdit
@@ -245,7 +250,6 @@ ToolTip()
 ButtonSAVE(*)
 {
 	;get the values from the forum fields.
-	global myGui
 	global ClipName := RegExReplace(ClipNameEdit.value, "`"|\*|\?|\||/|:|<|>|\\" , Replacement := "_")
 	global ClipHotstring := ClipHotstringEdit.value 
 	global UserNotes := UserNotesEdit.value 
@@ -276,15 +280,49 @@ if (ClipHotstring == ""){
 	rebuildMasterInclude()
 
 	Reload
+	return
 }
 
-;Allow the user to Arrow down from the search to the result list.
-Down::	
-global SearchControlID
-global CurrentCtrlFocus := ControlGetFocus("HotClipperV2.ahk")
-if (CurrentCtrlFocus == SearchControlID){
-	send "{Tab} {Down}"
-	return	 
-}else
-Down::Down
-return
+OptionsWindow(*) {
+	return
+}
+
+AboutWindow(*) {
+	return
+}
+
+#If WinActive("HotClipper - Manager")
+{
+	Down::
+	 {
+		FocusedHwnd := ControlGetFocus("A")
+		FocusedClassNN := ControlGetClassNN(FocusedHwnd)
+		if (FocusedClassNN ="Edit1"){
+		ControlFocus "SysListView321" , "HotClipper - Manager"
+		return
+		}
+		Else {
+			 Down::Down
+		return
+		}
+	 return
+	}
+	Del::
+	 {
+		FocusedHwnd := ControlGetFocus("A")
+		FocusedClassNN := ControlGetClassNN(FocusedHwnd)
+		if (FocusedClassNN ="SysListView321"){
+		global SelectedLVItem
+		Result := MsgBox("Delete:" . SelectedLVItem . "?",, "YesNo")
+		if Result = "Yes"
+			DeleteButton_Click()
+		else
+		return
+		}
+		Else {
+			 Del::Del
+		return
+		}
+	return
+	}
+}
