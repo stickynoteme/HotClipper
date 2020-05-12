@@ -23,6 +23,7 @@ Tray.Add()
 Tray.Add("Manager", "ManagerWindow")
 Tray.Add("About", "AboutWindow")
 Tray.Add("Options", "OptionsWindow")
+Tray.Add("Exit", "TrayExit")
 Tray.Default := "Manager"
 FileDelete A_WorkingDir . "\includeMaster.ahk"
 rebuildMasterInclude()
@@ -318,6 +319,10 @@ AboutWindow(*) {
 }
 ManagerWindow(*) {
 	BuildManager()
+	return
+}
+TrayExit(*) {
+	ExitApp 
 	return
 }
 
