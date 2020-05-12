@@ -15,13 +15,15 @@ global LVArray
 global sBar
 global TotalItems
 global myGui
+global iniFILE := "settings.ini"
 
 global tray := A_TrayMenu
 Tray.Delete()
 Tray.Add()
+Tray.Add("Manager", "ManagerWindow")
 Tray.Add("About", "AboutWindow")
 Tray.Add("Options", "OptionsWindow")
-
+Tray.Default := "Manager"
 FileDelete A_WorkingDir . "\includeMaster.ahk"
 rebuildMasterInclude()
 
@@ -211,6 +213,10 @@ UserInputEscapemyGui(*){
     myGui.Destroy()
 	return
 }
+UserInputEscapeOGui(*){
+    OGui.Destroy()
+	return
+}
 
 Kill_Tooltip(){
 	ToolTip()
@@ -234,13 +240,14 @@ Kill_Tooltip(){
 	;Make GUI to get ClipName and ClipHotstring
 	myGui := GuiCreate(,"HotClipper - Add New Clip")
 	myGui.BackColor := "ffaa00"
-	myGui.Add("Text",, "Enter Clip Name: (NO: /\:*?<>| )")
-	ClipNameEdit := myGui.AddEdit("vClipName w150")
+	myGui.Add("Text",, "Clip && File Name: (NO: /\:*?<>| )")
+	ClipNameEdit := myGui.AddEdit("vClipName w165")
 	myGui.Add("Text",, "Enter Hotstring: (optional)")
-	ClipHotstringEdit := myGui.AddEdit("vClipHotstring w150")
+	ClipHotstringEdit := myGui.AddEdit("vClipHotstring w165")
 	myGui.Add("Text",, "Notes:")
-	UserNotesEdit := myGui.AddEdit("vUserNotes w150")
-	saveButton :=myGui.Add("Button","Default w150 Backgroundffaa00", "SAVE")
+	UserNotesEdit := myGui.AddEdit("vUserNotes w165")
+	saveButton :=myGui.Add("Button","Default w165 Backgroundffaa00", "SAVE")
+	myGui.Add("Text",Center, "HotClipper will RELOAD on SAVE")
 	saveButton.OnEvent("Click", "ButtonSAVE")
 	myGui.Show
 	myGui.OnEvent("Escape", "UserInputEscapemyGui")
@@ -284,10 +291,33 @@ if (ClipHotstring == ""){
 }
 
 OptionsWindow(*) {
+	global opt1
+	global OGui
+	OGui := GuiCreate(,"HotClipper - Add New Clip")
+	OGui.BackColor := "ffaa00"
+	OGui.Add("Text",, "Options are saved on change")
+	opt1 := OGui.Add("CheckBox", "vopt1", "Send Ctrl+C with Win+I?")
+	opt1Value := IniRead(iniFILE, "Capture Settings", "Send Ctrl+C on Win+I" , 1)
+	opt1.Value := opt1Value
+	opt1.OnEvent("Click", "opt1CHECK")
+	OGui.SHOW
+	OGui.OnEvent("Escape", "UserInputEscapeOGui")
+
 	return
 }
-
+opt1CHECK(*){
+	global opt1
+	global OGui
+	NewVlaue := opt1.Value
+	IniWrite NewVlaue, iniFILE, "Capture Settings", "Send Ctrl+C on Win+I"
+	return
+}
 AboutWindow(*) {
+	msgbox "HotClipper Version 1.0.0 May 2020"
+	return
+}
+ManagerWindow(*) {
+	BuildManager()
 	return
 }
 
