@@ -17,7 +17,7 @@ HotClipper allows me to keep plaintext, richtext, richview, and many more templa
 Saving me time and energy, by allowing me to keep all my templates in one place.
 
 ### Why AHKv2?
-Because it had better raw clipboard handling then v1 and thus worked with more programs.
+Because it had better raw clipboard handling than v1 and thus worked with more programs.
 
 ### Why Does it still not work in program X?
 You're guess for program X would be as good as mine.
