@@ -7,6 +7,7 @@
 
 TraySetIcon("HotClipper.ico")
 
+global startingClipboard
 global LibAlreadyOpen
 global clipLibGui
 global SearchTermEdit
@@ -229,6 +230,7 @@ Kill_Tooltip(){
 ;------------------------------------------------------------------------------
 #i::
 {
+	startingClipboard = clipboard
 	if userSetSendC == 1
 		Send "{Ctrl down}c{Ctrl up}"
 
@@ -252,6 +254,8 @@ Kill_Tooltip(){
 	saveButton.OnEvent("Click", "ButtonSAVE")
 	myGui.Show
 	myGui.OnEvent("Escape", "UserInputEscapemyGui")
+	if userSetSendC == 1
+		clipboard = startingClipboard 
 	return
 }
 
@@ -314,7 +318,7 @@ opt1CHECK(*){
 	return
 }
 AboutWindow(*) {
-	msgbox "HotClipper Version 1.0.0 May 2020"
+	msgbox "HotClipper Version 1.0.1 Oct 2020"
 	return
 }
 ManagerWindow(*) {
