@@ -8,6 +8,7 @@
 TraySetIcon("HotClipper.ico")
 
 global startingClipboard
+global userSetSendC
 global LibAlreadyOpen
 global clipLibGui
 global SearchTermEdit
@@ -33,7 +34,7 @@ rebuildMasterInclude()
 ;Static users settings, need to be moved to an .ini
 userIniFile := "settings.ini"
 
-iniSetSendC := IniRead(userIniFile, "Capture Settings", "Send Ctrl+C on Win+I" , 0)
+iniSetSendC := IniRead(userIniFile, "Capture Settings", "Send Ctrl+C on Win+I" , 1)
 
 userSetSendC := iniSetSendC
 
@@ -230,15 +231,16 @@ Kill_Tooltip(){
 ;------------------------------------------------------------------------------
 #i::
 {
-	startingClipboard := clipboard
+	
+	startingClipboard := Clipboard
 	if userSetSendC == 1
 		Send "{Ctrl down}c{Ctrl up}"
-
 	global ClipName
-	global ClipHotstring 
+	global ClipHotstring
 	global ClipNameEdit
 	global ClipHotstringEdit
 	global UserNotesEdit
+	
 
 	;Make GUI to get ClipName and ClipHotstring
 	myGui := GuiCreate(,"HotClipper - Add New Clip")
@@ -277,7 +279,7 @@ if (ClipHotstring == ""){
 	NewScriptTMP := "/*`nDate " . TimeStamp . "`nApp " . WinGetTitle("A") . "`nNote " . UserNotes . "`n*/`n;::"
 }Else{
 	;This is what's going to go into the new hotstring script.
-	NewScriptTMP := "/*`nDate " . TimeStamp . "`nApp " . WinGetTitle("A") . "`nNote " . UserNotes . "`n*/`n::" . ClipHotstring . "::`nFileToRead := A_WorkingDir . `"\MyClips\" . ClipName . ".clip`"`nstartingClipboard := clipboard`nClipData := FileRead(FileToRead, `"RAW`")`nClipboard := ClipboardAll(ClipData)`nSleep 200`nSend `"{Ctrl down}v{Ctrl up}`"`nclipboard := startingClipboard`nReturn"
+	NewScriptTMP := "/*`nDate " . TimeStamp . "`nApp " . WinGetTitle("A") . "`nNote " . UserNotes . "`n*/`n::" . ClipHotstring . "::`nFileToRead := A_WorkingDir . `"\MyClips\" . ClipName . ".clip`"`nstartingClipboard := Clipboard`nClipData := FileRead(FileToRead, `"RAW`")`nClipboard := ClipboardAll(ClipData)`nSleep 200`nSend `"{Ctrl down}v{Ctrl up}`"`nclipboard := startingClipboard`nReturn"
 }
 	;This is what's going to be apended to this script.
 	AppenedTMP :="`n#Include *i " . ClipName . ".ahk"
@@ -288,10 +290,9 @@ if (ClipHotstring == ""){
 
 	;Rebuild the master include file and re-load the script:
 	rebuildMasterInclude()
-
-	Reload
 	if userSetSendC == 1
-		clipboard := startingClipboard 
+		clipboard := startingClipboard
+	Reload
 	return
 }
 
