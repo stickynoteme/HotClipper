@@ -7,6 +7,7 @@
 
 TraySetIcon("HotClipper.ico")
 
+global startingClipboard
 global LibAlreadyOpen
 global clipLibGui
 global SearchTermEdit
@@ -229,6 +230,7 @@ Kill_Tooltip(){
 ;------------------------------------------------------------------------------
 #i::
 {
+	startingClipboard := clipboard
 	if userSetSendC == 1
 		Send "{Ctrl down}c{Ctrl up}"
 
@@ -275,7 +277,7 @@ if (ClipHotstring == ""){
 	NewScriptTMP := "/*`nDate " . TimeStamp . "`nApp " . WinGetTitle("A") . "`nNote " . UserNotes . "`n*/`n;::"
 }Else{
 	;This is what's going to go into the new hotstring script.
-	NewScriptTMP := "/*`nDate " . TimeStamp . "`nApp " . WinGetTitle("A") . "`nNote " . UserNotes . "`n*/`n::" . ClipHotstring . "::`nFileToRead := A_WorkingDir . `"\MyClips\" . ClipName . ".clip`"`nClipData := FileRead(FileToRead, `"RAW`")`nClipboard := ClipboardAll(ClipData)`nSleep 200`nSend `"{Ctrl down}v{Ctrl up}`"`nReturn"
+	NewScriptTMP := "/*`nDate " . TimeStamp . "`nApp " . WinGetTitle("A") . "`nNote " . UserNotes . "`n*/`n::" . ClipHotstring . "::`nFileToRead := A_WorkingDir . `"\MyClips\" . ClipName . ".clip`"`nstartingClipboard := clipboard`nClipData := FileRead(FileToRead, `"RAW`")`nClipboard := ClipboardAll(ClipData)`nSleep 200`nSend `"{Ctrl down}v{Ctrl up}`"`nclipboard := startingClipboard`nReturn"
 }
 	;This is what's going to be apended to this script.
 	AppenedTMP :="`n#Include *i " . ClipName . ".ahk"
@@ -288,6 +290,8 @@ if (ClipHotstring == ""){
 	rebuildMasterInclude()
 
 	Reload
+	if userSetSendC == 1
+		clipboard := startingClipboard 
 	return
 }
 
@@ -314,7 +318,7 @@ opt1CHECK(*){
 	return
 }
 AboutWindow(*) {
-	msgbox "HotClipper Version 1.0.0 May 2020"
+	msgbox "HotClipper Version 1.0.1 Oct 2020"
 	return
 }
 ManagerWindow(*) {
