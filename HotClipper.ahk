@@ -319,7 +319,7 @@ opt1CHECK(*){
 	return
 }
 AboutWindow(*) {
-	msgbox "HotClipper Version 1.0.1 Oct 2020"
+	msgbox "HotClipper Version 1.0.1 Oct 2020`n`nDefault hotkeys:`n`nWin+I = Copy to clip [Copies select by default.]`nWin+H = Show clip library`n`nWhat is Hotclipper for?`n`nHotclipper is a raw clipboard manager that is geared towads hotstrings and slef managerment. By double clicking an entir in the library the clip is copied to the clipobard.`n`nWhat is a raw clip?`n`nA raw clip is the raw data on the clipbard which includes things other than text such as specialized formating that other clipboard amangers ignore.`n`nHotclipper doesn't save the x data from x program that's on the clipboard.`n`nSome programs don't save all the data in the clipboard and instead link temporary files else where on the system. So even if the clipboard is saved the temporary files are not."
 	return
 }
 ManagerWindow(*) {
